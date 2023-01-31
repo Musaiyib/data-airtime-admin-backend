@@ -3,6 +3,7 @@ import { UserModel } from "../models/userModel.js";
 import asyncHandler from "express-async-handler";
 import jwt from "jsonwebtoken";
 import EmailValidator from "email-validator";
+import { WalletModel } from "../models/walletModel.js";
 
 // generating token
 const generateToken = (id, role) => {
@@ -17,8 +18,8 @@ const validateEmail = (val) => {
 
 // register user
 export const handleNewUser = asyncHandler(async (req, res) => {
-  const { email, password, name, role, regNo } = req.body;
-  if (!email || !password || !name || !role || !regNo)
+  const { email, password, name, role, pin, mobile } = req.body;
+  if (!email || !password || !name || !pin || !mobile)
     return res.status(400).json({ msg: "All are required" });
 
   // validating email
@@ -29,8 +30,6 @@ export const handleNewUser = asyncHandler(async (req, res) => {
   // check if user exist in database
   const emailDuplicate = await UserModel.findOne({ email });
   if (emailDuplicate) return res.status(409).json("User already exist");
-  const regNoDuplicate = await UserModel.findOne({ regNo });
-  if (regNoDuplicate) return res.status(409).json("User already exist");
 
   try {
     // encrypting the password
@@ -40,21 +39,26 @@ export const handleNewUser = asyncHandler(async (req, res) => {
     //create and store new user
     const createUser = await UserModel.create({
       email,
-      regNo,
       password: hashedPwd,
-      name,
       role,
+      name,
+      pin,
+      mobile,
     });
 
     if (createUser) {
-      return res.status(201).json({
-        _id: createUser._id,
-        name: createUser.name,
-        email: createUser.email,
-        role: createUser.role,
-        regNo: createUser.regNo,
-        token: generateToken(createUser._id, createUser.role),
-      });
+      if (await WalletModel.create({ user: createUser._id })) {
+        return res.status(201).json({
+          _id: createUser._id,
+          name: createUser.name,
+          email: createUser.email,
+          role: createUser.role,
+          code: 200,
+          pin: createUser.pin,
+          mobile: createUser.mobile,
+          token: generateToken(createUser._id, createUser.role),
+        });
+      }
     }
   } catch (error) {
     console.log(error);
@@ -64,7 +68,6 @@ export const handleNewUser = asyncHandler(async (req, res) => {
 //login user
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-
   if (!email || !password)
     return res.status(400).json({ message: "Email and password are required" });
 
@@ -85,34 +88,42 @@ export const login = asyncHandler(async (req, res) => {
     const validatePassword = await bcrypt.compare(password, user.password);
 
     //log user in
-    if (validatePassword) {
+    const wallet = await WalletModel.find(user._id);
+    if (validatePassword && wallet) {
       return res.status(200).json({
         _id: user._id,
         email: user.email,
         name: user.name,
+        code: 200,
         role: user.role,
-        regNo: user.regNo,
+        pin: user.pin,
+        mobile: user.mobile,
         token: generateToken(user._id, user.role),
+        wallet: wallet[0].balance,
       });
     } else {
       return res.status(409).json({ message: "Invalid credentials" });
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 });
 
 // get me
-export const getMe = asyncHandler(async (req, res) => {
-  const { _id, name, email } = await User.findById(req.user.id);
-
-  res.status(200).json({
-    _id: user._id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    regNo: user.regNo,
-  });
+export const getWalletBalance = asyncHandler(async (req, res) => {
+  try {
+    const wallet = await WalletModel.findOne({ user: req.params.id });
+    if (!wallet) {
+      return res.status(404).json({ error: "wallet not found" });
+    }
+    const { balance } = wallet;
+    res.status(200).json(balance);
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: "An error occurred while retrieving wallet balance" });
+  }
 });
 
 //get all users

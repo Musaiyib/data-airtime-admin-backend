@@ -12,20 +12,25 @@ const UserSchema = mongoose.Schema({
     lowercase: true,
     required: true,
   },
-  regNo: {
-    type: String,
-    lowercase: true,
-    required: true,
-  },
   role: {
     type: String,
     required: true,
-    default: "member",
+    default: "user",
   },
   password: {
     type: String,
     required: true,
     minLenght: 8,
+  },
+  pin: {
+    type: Number,
+    required: true,
+    minLenght: 4,
+  },
+  mobile: {
+    type: String,
+    required: true,
+    minLenght: 11,
   },
 });
 

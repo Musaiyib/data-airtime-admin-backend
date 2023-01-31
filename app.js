@@ -5,10 +5,9 @@ import express, { json } from "express";
 import { Database } from "./config.js";
 import cors from "cors";
 import userRoute from "./routes/userRoute.js";
-import candidateRoute from "./routes/candidateRoute.js";
-import voteRoute from "./routes/voteRoute.js"
-import rolesRoute from "./routes/rolesRoute.js"
+import subscriptionRoute from "./routes/subscriptionRoute.js";
 import cookieParser from "cookie-parser";
+import trxRoute from "./routes/trxRoute.js";
 
 const app = express();
 app.use(cors());
@@ -16,9 +15,8 @@ app.use(json());
 app.use(cookieParser());
 
 app.use("/api/users", userRoute);
-app.use("/api/candidate", candidateRoute);
-app.use('/api/vote', voteRoute)
-app.use('/api/roles', rolesRoute);
+app.use("/api/transaction", trxRoute);
+app.use("/api/subscription", subscriptionRoute);
 
 const port = process.env.PORT || 4000;
 (async () => {

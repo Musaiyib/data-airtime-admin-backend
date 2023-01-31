@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 export class Database {
   constructor() {
@@ -6,15 +6,17 @@ export class Database {
   }
   async connect() {
     try {
-
       mongoose.connect(this.url, {
-        autoIndex: true, useNewUrlParser: true, autoCreate: true
-      })
-      console.log("Connection to MongoDB cluster was successfully")
+        autoIndex: true,
+        useNewUrlParser: true,
+        autoCreate: true,
+        writeConcern: { w: "majority" },
+        // autoReconnect: false,
+      });
+      console.log("Connection to MongoDB cluster was successfully");
     } catch (error) {
-      console.log("Error connecting to MongoDB")
-      console.error(error)
+      console.log("Error connecting to MongoDB");
+      console.error(error);
     }
-
   }
 }
