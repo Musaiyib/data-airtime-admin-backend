@@ -2,12 +2,12 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import express, { json } from "express";
 // import colors from "colors";
-import { Database } from "./config.js";
+import { Database } from "../config.js";
 import cors from "cors";
-import userRoute from "./routes/userRoute.js";
-import subscriptionRoute from "./routes/subscriptionRoute.js";
+import userRoute from "../routes/userRoute.js";
+import subscriptionRoute from "../routes/subscriptionRoute.js";
 import cookieParser from "cookie-parser";
-import trxRoute from "./routes/trxRoute.js";
+import trxRoute from "../routes/trxRoute.js";
 
 const app = express();
 app.use(cors());

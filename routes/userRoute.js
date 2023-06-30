@@ -6,6 +6,7 @@ import {
   getUsers,
   login,
   getWalletBalance,
+  fundWallet,
 } from "../controllers/userController.js";
 const userRoute = express.Router();
 
@@ -16,6 +17,6 @@ userRoute.route("/allusers").get(getUsers);
 
 // registering elcom
 userRoute.route("/register").post(handleNewUser);
-userRoute.route("/wallet/balance/:id").get(getWalletBalance);
+userRoute.route("/wallet/balance/:id").get(getWalletBalance).post(fundWallet);
 
 export default userRoute;

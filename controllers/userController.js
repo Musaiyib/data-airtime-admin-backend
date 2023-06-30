@@ -126,6 +126,32 @@ export const getWalletBalance = asyncHandler(async (req, res) => {
   }
 });
 
+export const fundWallet = asyncHandler(async (req, res) => {
+  try {
+    // Find the wallet for the user with the specified ID
+    const wallet = await WalletModel.findOne({ user: req.params.id });
+
+    // If the wallet is not found, return a 404 error response
+    if (!wallet) {
+      return res.status(404).json({ error: "wallet not found" });
+    }
+    // Get the amount to be added to the wallet balance from the request body
+    const { amount } = req.body;
+    // Update the balance of the wallet
+    wallet.balance += JSON.parse(amount);
+    await wallet.save();
+    // Return the updated balance of the wallet in a 200 OK response
+    res.status(200).json({ code: 200, message: "Wallet funded successfully" });
+  } catch (err) {
+    // Log the error to the console
+    console.error(err);
+    // Return a 500 Internal Server Error response
+    res
+      .status(500)
+      .json({ error: "An error occurred while funding the wallet" });
+  }
+});
+
 //get all users
 export const getUsers = asyncHandler(async (req, res) => {
   const users = await UserModel.find();
